@@ -1,0 +1,6 @@
+streamlit
+pymongo
+pandas
+scipy
+mlxtend
+scikit-learn
