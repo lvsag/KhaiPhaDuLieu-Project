@@ -293,8 +293,71 @@ html, body, [class*="css"] {
     object-fit: contain;
 }
 
+.cart-item-card {
+    background: white;
+    border: 1px solid #dbe4ef;
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: 0 8px 20px rgba(15,23,42,0.08);
+    margin-bottom: 12px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 150px;
+    gap: 18px;
+    align-items: center;
+}
+
+.cart-item-title {
+    color: #111827;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+}
+
+.cart-item-price {
+    color: #dc2626;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.cart-item-stock {
+    color: #374151;
+    font-weight: 600;
+    margin: 0;
+}
+
+.cart-item-stock.out {
+    color: #dc2626;
+}
+
+.cart-item-cover {
+    background: linear-gradient(180deg, #f8fafc 0%, #eef6ff 100%);
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    min-height: 140px;
+    max-width: 180px;
+    margin: 0 auto;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.cart-item-cover img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 122px;
+    object-fit: contain;
+}
+
 @media (max-width: 800px) {
     .order-card {
+        grid-template-columns: 1fr;
+    }
+
+    .cart-item-card {
         grid-template-columns: 1fr;
     }
 }
@@ -656,23 +719,21 @@ elif st.session_state.page == "Giỏ hàng":
             with col_info:
                 current_book = db_handler.db["Books"].find_one({"_id": int(item["_id"])}) or item
                 current_stock = int(current_book.get("stock", 0))
+                cart_image_tag = get_book_image_tag(current_book)
                 st.markdown(f"""
-                <div style="
-                    background:white;
-                    padding:15px;
-                    border-radius:10px;
-                    border:2px solid #dcdcdc;
-                    box-shadow:0 2px 5px rgba(0,0,0,0.1);
-                    margin-bottom:10px;
-                ">
-                <h4 style="color:black; margin-bottom:10px;">{item['title']}</h4>
+                <div class="cart-item-card">
+                    <div>
+                        <h4 class="cart-item-title">{item['title']}</h4>
                 <h3 style="color:red;">{item['price']:,} VNĐ</h3>
                 <p style="color:{'#dc2626' if current_stock <= 0 else '#374151'}; font-weight:600;">
                     {"Hết hàng" if current_stock <= 0 else f"Tồn kho hiện tại: {current_stock} cuốn"}
                 </p>
+                    </div>
+                    <div class="cart-item-cover">
+                        {cart_image_tag}
+                    </div>
                 </div>
-                """, unsafe_allow_html=True)
-
+                    """, unsafe_allow_html=True)
             with col_del:
                 st.write("")
                 st.write("")
@@ -694,8 +755,9 @@ elif st.session_state.page == "Giỏ hàng":
             rules = mining.run_apriori_analysis(0.05, 0.3)
 
             if not rules.empty:
+                suggested_titles = set()
 
-                for _, row in rules.iterrows():
+                for rule_idx, row in rules.iterrows():
 
                     if set(row['antecedents']).issubset(
                         set(df_cart['title'].tolist())
@@ -703,13 +765,14 @@ elif st.session_state.page == "Giỏ hàng":
 
                         for sach_k in row['consequents']:
 
-                            if sach_k not in df_cart['title'].tolist():
+                            if sach_k not in df_cart['title'].tolist() and sach_k not in suggested_titles:
 
                                 b_k = db_handler.db["Books"].find_one(
                                     {"title": sach_k}
                                 )
 
                                 if b_k:
+                                    suggested_titles.add(sach_k)
 
                                     st.info(
                                         f"💡 Khách thường mua thêm: {sach_k}"
@@ -717,7 +780,7 @@ elif st.session_state.page == "Giỏ hàng":
 
                                     if st.button(
                                         "➕ Thêm sản phẩm",
-                                        key=f"ak_{b_k['_id']}",
+                                        key=f"ak_{rule_idx}_{b_k['_id']}_{len(suggested_titles)}",
                                         disabled=not can_add_to_cart(b_k)
                                     ):
                                         st.session_state.cart.append(b_k)

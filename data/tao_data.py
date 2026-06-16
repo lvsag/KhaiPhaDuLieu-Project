@@ -23,7 +23,6 @@ book_id = 1
 SO_LUONG_ANH_MAU = 30  # Bạn có bao nhiêu ảnh trong thư mục hinh_anh_sach thì điền vào đây
 SACH_HET_HANG = {3, 17, 42}  # THEM: 1-3 cuon het hang de test nut mua bi disable.
 
-# SUA: Gan anh co dinh theo ten sach, khong random nua de bia va ten sach khop nhau.
 ANH_THEO_TEN_SACH = {
     "Doraemon Tập 1": "hinh14.jpg",
     "Doraemon Tập 2": "hinh15.jpg",
