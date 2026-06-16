@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.streamlit/secrets.toml
+outputs/
+data/cache/
+*.log
+
+data/*
+!data/.gitkeep
+
+mongodb_import_project/data/*
+!mongodb_import_project/data/.gitkeep
+
+*.csv
+*.parquet
